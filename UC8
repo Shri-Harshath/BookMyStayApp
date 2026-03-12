@@ -1,0 +1,69 @@
+import java.util.*;
+
+class Reservation {
+    String reservationId;
+    String customerName;
+    String roomType;
+
+    Reservation(String reservationId, String customerName, String roomType) {
+        this.reservationId = reservationId;
+        this.customerName = customerName;
+        this.roomType = roomType;
+    }
+}
+
+class BookingHistory {
+    List<Reservation> history = new ArrayList<>();
+
+    void addReservation(Reservation r) {
+        history.add(r);
+    }
+
+    List<Reservation> getAllReservations() {
+        return history;
+    }
+}
+
+class BookingReportService {
+    void showAllBookings(List<Reservation> list) {
+        for (Reservation r : list) {
+            System.out.println(r.reservationId + " " + r.customerName + " " + r.roomType);
+        }
+    }
+
+    void showSummary(List<Reservation> list) {
+        System.out.println("Total Bookings: " + list.size());
+
+        HashMap<String, Integer> roomCount = new HashMap<>();
+
+        for (Reservation r : list) {
+            roomCount.put(r.roomType, roomCount.getOrDefault(r.roomType, 0) + 1);
+        }
+
+        for (String type : roomCount.keySet()) {
+            System.out.println(type + " : " + roomCount.get(type));
+        }
+    }
+}
+
+public class UseCase8BookingHistoryReport {
+    public static void main(String[] args) {
+
+        BookingHistory history = new BookingHistory();
+        BookingReportService report = new BookingReportService();
+
+        history.addReservation(new Reservation("R101", "Arun", "Single"));
+        history.addReservation(new Reservation("R102", "Meena", "Double"));
+        history.addReservation(new Reservation("R103", "Rahul", "Suite"));
+        history.addReservation(new Reservation("R104", "Divya", "Single"));
+
+        List<Reservation> list = history.getAllReservations();
+
+        System.out.println("Booking History");
+        report.showAllBookings(list);
+
+        System.out.println();
+        System.out.println("Summary Report");
+        report.showSummary(list);
+    }
+}

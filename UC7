@@ -1,0 +1,66 @@
+import java.util.*;
+
+class Service {
+    String name;
+    double price;
+
+    Service(String name, double price) {
+        this.name = name;
+        this.price = price;
+    }
+}
+
+class AddOnServiceManager {
+    HashMap<String, List<Service>> reservationServices = new HashMap<>();
+
+    void addService(String reservationId, Service service) {
+        reservationServices.putIfAbsent(reservationId, new ArrayList<>());
+        reservationServices.get(reservationId).add(service);
+    }
+
+    double getTotalCost(String reservationId) {
+        double total = 0;
+        List<Service> list = reservationServices.get(reservationId);
+        if (list != null) {
+            for (Service s : list) {
+                total += s.price;
+            }
+        }
+        return total;
+    }
+
+    void showServices(String reservationId) {
+        List<Service> list = reservationServices.get(reservationId);
+        if (list == null) {
+            System.out.println("No services selected");
+            return;
+        }
+
+        for (Service s : list) {
+            System.out.println(s.name + " - " + s.price);
+        }
+    }
+}
+
+public class UseCase7AddOnServiceSelection {
+    public static void main(String[] args) {
+
+        AddOnServiceManager manager = new AddOnServiceManager();
+
+        Service breakfast = new Service("Breakfast", 300);
+        Service airportPickup = new Service("Airport Pickup", 800);
+        Service spa = new Service("Spa", 1500);
+
+        String reservationId = "RES101";
+
+        manager.addService(reservationId, breakfast);
+        manager.addService(reservationId, airportPickup);
+        manager.addService(reservationId, spa);
+
+        System.out.println("Services for Reservation " + reservationId + ":");
+        manager.showServices(reservationId);
+
+        double total = manager.getTotalCost(reservationId);
+        System.out.println("Total Additional Cost: " + total);
+    }
+}

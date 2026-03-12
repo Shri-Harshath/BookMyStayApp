@@ -1,0 +1,66 @@
+import java.util.*;
+
+class InvalidBookingException extends Exception {
+    InvalidBookingException(String message) {
+        super(message);
+    }
+}
+
+class InventoryService {
+    HashMap<String, Integer> inventory = new HashMap<>();
+
+    InventoryService() {
+        inventory.put("Single", 2);
+        inventory.put("Double", 1);
+        inventory.put("Suite", 1);
+    }
+
+    void validateRoomType(String type) throws InvalidBookingException {
+        if (!inventory.containsKey(type)) {
+            throw new InvalidBookingException("Invalid room type: " + type);
+        }
+    }
+
+    void checkAvailability(String type) throws InvalidBookingException {
+        if (inventory.get(type) <= 0) {
+            throw new InvalidBookingException("No rooms available for type: " + type);
+        }
+    }
+
+    void allocate(String type) throws InvalidBookingException {
+        int count = inventory.get(type);
+        if (count - 1 < 0) {
+            throw new InvalidBookingException("Inventory cannot be negative for: " + type);
+        }
+        inventory.put(type, count - 1);
+    }
+}
+
+class BookingService {
+    InventoryService inventory = new InventoryService();
+
+    void bookRoom(String customer, String type) {
+        try {
+            inventory.validateRoomType(type);
+            inventory.checkAvailability(type);
+            inventory.allocate(type);
+            System.out.println("Booking confirmed for " + customer + " : " + type);
+        } catch (InvalidBookingException e) {
+            System.out.println("Booking failed for " + customer + " - " + e.getMessage());
+        }
+    }
+}
+
+public class UseCase9ErrorHandlingValidation {
+    public static void main(String[] args) {
+
+        BookingService service = new BookingService();
+
+        service.bookRoom("Arun", "Single");
+        service.bookRoom("Meena", "Suite");
+        service.bookRoom("Rahul", "Suite");
+        service.bookRoom("Divya", "Premium");
+        service.bookRoom("Kiran", "Double");
+        service.bookRoom("Sanjay", "Double");
+    }
+}

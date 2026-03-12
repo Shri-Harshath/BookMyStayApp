@@ -1,0 +1,93 @@
+import java.io.*;
+import java.util.*;
+
+class Reservation implements Serializable {
+    String reservationId;
+    String customerName;
+    String roomType;
+
+    Reservation(String reservationId, String customerName, String roomType) {
+        this.reservationId = reservationId;
+        this.customerName = customerName;
+        this.roomType = roomType;
+    }
+}
+
+class SystemState implements Serializable {
+    HashMap<String, Integer> inventory;
+    List<Reservation> bookingHistory;
+
+    SystemState(HashMap<String, Integer> inventory, List<Reservation> bookingHistory) {
+        this.inventory = inventory;
+        this.bookingHistory = bookingHistory;
+    }
+}
+
+class PersistenceService {
+
+    void saveState(SystemState state, String fileName) {
+        try {
+            ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(fileName));
+            out.writeObject(state);
+            out.close();
+            System.out.println("System state saved");
+        } catch (Exception e) {
+            System.out.println("Error saving state");
+        }
+    }
+
+    SystemState loadState(String fileName) {
+        try {
+            ObjectInputStream in = new ObjectInputStream(new FileInputStream(fileName));
+            SystemState state = (SystemState) in.readObject();
+            in.close();
+            System.out.println("System state restored");
+            return state;
+        } catch (Exception e) {
+            System.out.println("No previous state found, starting fresh");
+            return null;
+        }
+    }
+}
+
+public class UseCase12DataPersistenceRecovery {
+    public static void main(String[] args) {
+
+        PersistenceService persistence = new PersistenceService();
+        String file = "system_state.dat";
+
+        SystemState state = persistence.loadState(file);
+
+        HashMap<String, Integer> inventory;
+        List<Reservation> history;
+
+        if (state == null) {
+            inventory = new HashMap<>();
+            inventory.put("Single", 2);
+            inventory.put("Double", 1);
+            inventory.put("Suite", 1);
+
+            history = new ArrayList<>();
+
+            history.add(new Reservation("R101", "Arun", "Single"));
+            history.add(new Reservation("R102", "Meena", "Double"));
+        } else {
+            inventory = state.inventory;
+            history = state.bookingHistory;
+        }
+
+        System.out.println("Inventory State");
+        for (String key : inventory.keySet()) {
+            System.out.println(key + " : " + inventory.get(key));
+        }
+
+        System.out.println();
+        System.out.println("Booking History");
+        for (Reservation r : history) {
+            System.out.println(r.reservationId + " " + r.customerName + " " + r.roomType);
+        }
+
+        SystemState newState = new SystemState(inventory, history);
+        persistence.saveState(newState, file);
+    }
+}

@@ -1,0 +1,88 @@
+import java.util.*;
+
+class BookingRequest {
+    String customerName;
+    String roomType;
+
+    BookingRequest(String customerName, String roomType) {
+        this.customerName = customerName;
+        this.roomType = roomType;
+    }
+}
+
+class InventoryService {
+    HashMap<String, Integer> inventory = new HashMap<>();
+
+    InventoryService() {
+        inventory.put("Single", 3);
+        inventory.put("Double", 2);
+        inventory.put("Suite", 1);
+    }
+
+    boolean isAvailable(String type) {
+        return inventory.getOrDefault(type, 0) > 0;
+    }
+
+    void decrease(String type) {
+        inventory.put(type, inventory.get(type) - 1);
+    }
+}
+
+public class UseCase6RoomAllocationService {
+
+    Queue<BookingRequest> requestQueue = new LinkedList<>();
+    HashMap<String, Set<String>> allocatedRooms = new HashMap<>();
+    Set<String> usedRoomIds = new HashSet<>();
+    InventoryService inventoryService = new InventoryService();
+    int idCounter = 1;
+
+    String generateRoomId(String type) {
+        String id = type.substring(0, 1).toUpperCase() + idCounter;
+        idCounter++;
+        return id;
+    }
+
+    void addRequest(String name, String type) {
+        requestQueue.add(new BookingRequest(name, type));
+    }
+
+    void processBookings() {
+        while (!requestQueue.isEmpty()) {
+            BookingRequest request = requestQueue.poll();
+
+            if (inventoryService.isAvailable(request.roomType)) {
+                String roomId = generateRoomId(request.roomType);
+
+                while (usedRoomIds.contains(roomId)) {
+                    roomId = generateRoomId(request.roomType);
+                }
+
+                usedRoomIds.add(roomId);
+
+                allocatedRooms.putIfAbsent(request.roomType, new HashSet<>());
+                allocatedRooms.get(request.roomType).add(roomId);
+
+                inventoryService.decrease(request.roomType);
+
+                System.out.println("Reservation Confirmed: " + request.customerName +
+                        " -> Room " + roomId + " (" + request.roomType + ")");
+            } else {
+                System.out.println("Reservation Failed for " + request.customerName +
+                        " (No " + request.roomType + " rooms available)");
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        UseCase6RoomAllocationService service = new UseCase6RoomAllocationService();
+
+        service.addRequest("Arun", "Single");
+        service.addRequest("Meena", "Double");
+        service.addRequest("Rahul", "Single");
+        service.addRequest("Divya", "Suite");
+        service.addRequest("Kiran", "Single");
+        service.addRequest("Sanjay", "Suite");
+
+        service.processBookings();
+    }
+}
